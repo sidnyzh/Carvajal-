@@ -1,0 +1,85 @@
+﻿@page "/Pedidos"
+@using Carvajal.Services.Shared
+@inject IPedidoService PedidoService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+@attribute [Authorize]
+
+<Authorized>
+    <PageTitle>Pedidos</PageTitle>
+    <h3>Pedidos</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Usuario</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Iva</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pedido in PedidoService.Pedidos)
+            {
+                <tr>
+                    <td>@pedido.Id</td>
+                    <td>@pedido.Usuario</td>
+                    <td>@pedido.Producto</td>
+                    <td>@pedido.Cantidad</td>
+                    <td>@pedido.Subtotal</td>
+                    <td>@pedido.Iva</td>
+                    <td>@pedido.Total</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="(() => MostrarPedido(pedido.Id))"><i class="oi oi-pencil"></i></button>
+                        <button class="btn btn-danger" @onclick="(() => EliminarPedido(pedido.Id))"><i class="oi oi-trash"></i></button>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="CrearPedido">Crear pedido</button>
+</Authorized>
+<NotAuthorized>
+    <span>.</span>
+</NotAuthorized>
+
+
+@code {
+    Pedido pedido = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await PedidoService.ObtenerPedidos();
+    }
+
+    void MostrarPedido(int id)
+    {
+        NavigationManager.NavigateTo($"PedidoDetalle/{id}");
+    }
+
+    void CrearPedido()
+    {
+        NavigationManager.NavigateTo("/PedidoDetalle");
+    }
+
+    async Task EliminarPedido(int id)
+    {
+        var response = await PedidoService.EliminarPedido(id);
+        if (response.IsSuccess)
+        {
+            this.toastService.ShowSuccess(response.Message, "Exitoso");
+            var pedido = PedidoService.Pedidos.Where(x => x.Id == id).FirstOrDefault()!;
+            PedidoService.Pedidos.Remove(pedido);
+        }
+        else
+        {
+            this.toastService.ShowError(response.Message, "Error");
+        }
+
+    }
+
+}

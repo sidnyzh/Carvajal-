@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+ 
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Domain\Domain.Repository\Domain.Repository.csproj" />
+    <ProjectReference Include="..\Application.Interfaces\Application.Interfaces.csproj" />
+    <ProjectReference Include="..\Application.Response\Application.Response.csproj" />
+    <ProjectReference Include="..\ApplicationDTO\ApplicationDTO.csproj" />
+  </ItemGroup>
+
+</Project>

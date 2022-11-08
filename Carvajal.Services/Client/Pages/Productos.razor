@@ -1,0 +1,76 @@
+﻿@page "/Productos"
+@using Carvajal.Services.Shared
+@inject HttpClient Http
+@inject IProductoService ProductoService
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+@attribute [Authorize]
+
+<PageTitle>Procuctos</PageTitle>
+<h3>Procuctos</h3>
+
+<Authorized>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Descripcion</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var producto in ProductoService.Productos)
+            {
+                <tr>
+                    <td>@producto.Id</td>
+                    <td>@producto.Descripcion</td>
+                    <td>@producto.Valor</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="(() => MostrarProducto(producto.Id))"><i class="oi oi-pencil"></i></button>
+                        <button class="btn btn-danger" @onclick="(() => EliminarProducto(producto.Id))"><i class="oi oi-trash"></i></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="CrearProducto">Crear producto</button>
+</Authorized>
+<NotAuthorized>
+    <span>.</span>
+</NotAuthorized>
+
+@code {
+    Producto producto = new Producto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ProductoService.ObtenerProductos();
+    }
+
+    void MostrarProducto(int id)
+    {
+        NavigationManager.NavigateTo($"ProductoDetalle/{id}");
+    }
+
+    void CrearProducto()
+    {
+        NavigationManager.NavigateTo("/ProductoDetalle");
+    }
+
+    async Task EliminarProducto(int id)
+    {
+        var response = await ProductoService.EliminarProducto(id);
+        if (response.IsSuccess)
+        {
+            this.toastService.ShowSuccess(message: "Producto eliminado", "Exito");
+            var producto = ProductoService.Productos.Where(x => x.Id == id).FirstOrDefault()!;
+            ProductoService.Productos.Remove(producto);
+        }
+        else
+        {
+            this.toastService.ShowError("No se puede eliminar este producto porque está en un pedido", "error");
+        }
+
+    }
+
+}

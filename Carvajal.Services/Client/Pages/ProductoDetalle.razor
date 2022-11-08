@@ -1,0 +1,99 @@
+﻿@page "/ProductoDetalle"
+@page "/ProductoDetalle/{id:int}"
+@inject IProductoService ProductoService
+@inject IToastService toastService
+
+
+@if (Id == null)
+{
+    <PageTitle>Crear producto</PageTitle>
+    <h3>Crear un nuevo producto para el inventario</h3>
+}
+else
+{
+    <PageTitle>Editar @producto.Descripcion</PageTitle>
+    <h3>Editar el producto: @producto.Descripcion</h3>
+}
+
+<EditForm Model="@producto" OnSubmit="HandleSubmit">
+    <div class="container-fluid">
+        <div class="form-group row mb-1">
+            <label class="col-sm-3">Descripcion</label>
+            <div class="col-sm-8">
+                <InputText class="form-control" @bind-Value="@producto.Descripcion"></InputText>
+            </div>
+        </div>
+        <div class="form-group row mb-1">
+            <label class="col-sm-3">Valor</label>
+            <div class="col-sm-8">
+                <InputNumber class="form-control" @bind-Value="@producto.Valor"></InputNumber>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">@btnText</button>
+    </div>
+
+    
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    string btnText = string.Empty;
+
+    Producto producto = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id is null)
+        {
+            btnText = "Crear producto";
+        }
+        else 
+        {
+            btnText = "Actualizar producto";
+            await ProductoService.ObtenerProducto(Id.Value);
+            
+        }
+       
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id == null)
+        {
+        }
+        else
+        {
+            producto = await ProductoService.ObtenerProducto(Id.Value);
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (Id == null)
+        {
+            var response = await ProductoService.InsertarProducto(producto);
+            if (response.IsSuccess)
+            {
+                this.toastService.ShowSuccess(response.Message, "Exitoso");
+            }
+            else
+            {
+                this.toastService.ShowError(response.Message, "Error");
+            }
+        }
+        else
+        {
+            var response = await ProductoService.ActualizarProducto(producto);
+            if (response.IsSuccess)
+            {
+                this.toastService.ShowSuccess(response.Message, "Exitoso");
+            }
+            else
+            {
+                this.toastService.ShowError(response.Message, "Error");
+            }
+        }
+    }
+}
